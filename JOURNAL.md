@@ -37,7 +37,7 @@ As a result, the Raspberry Pi could not yet be successfully configured for the p
 
 **Total time spent:** 2 hours
 
-**Progress:** 🚧 In Progress — Learned the purpose of using an SD card as the Raspberry Pi's main storage for the operating system and configuration. 
+**Progress:**  In Progress — Learned the purpose of using an SD card as the Raspberry Pi's main storage for the operating system and configuration. 
 Also learned how to use Raspberry Pi Imager, configure Wi-Fi and SSH, identify SD-card issues, and troubleshoot write and verification failures.
 
 **Issue:** SD card write and verification failure
