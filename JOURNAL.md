@@ -31,8 +31,8 @@ During the setup, however, the SD card encountered several issues. Raspberry Pi 
 
 As a result, the Raspberry Pi could not yet be successfully configured for the planned Wi-Fi-based headless connection. Further testing of the SD card and card reader is required before continuing with the Raspberry Pi setup.
 
-![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure.jpeg)
-![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure2.jpeg)
+![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure.jpeg.jpeg)
+![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure2.jpeg.png)
 
 
 **Total time spent:** 2 hours
