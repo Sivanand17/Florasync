@@ -44,6 +44,8 @@ Also learned how to use Raspberry Pi Imager, configure Wi-Fi and SSH, identify S
 
 **Next step:** Already tested the SD card for many times so i am going to buy new SD card.
 
+---
+
 ## September 12, 11:00 PM: Purchased Components for FloraSync
 
 Purchased several electronic and mechanical components required for the continued development of the **FloraSync smart agriculture system**. These components will be used across different subsystems, particularly the **AgriBot fertilizer spraying system**, power supply setup, and LCD-based monitoring systems.
