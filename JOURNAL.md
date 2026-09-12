@@ -33,6 +33,8 @@ As a result, the Raspberry Pi could not yet be successfully configured for the p
 
 ![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure.jpeg)
 
+**Total time spent:** 2 hours
+
 **Progress:** 🚧 In Progress
 
 **Issue:** SD card write and verification failure
