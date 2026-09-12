@@ -23,6 +23,18 @@ The hardware wiring and insulation work for the prototype has been successfully 
 
 # September 12, 3:00 PM: Worked on Raspberry Pi
 
-Continued development and testing of the Raspberry Pi-based system as part of the FloraSync project.
+Continued development and testing of the Raspberry Pi-based animal intrusion alert system as part of the FloraSync project. The Raspberry Pi 3 Model B was prepared for a headless setup so that it could be accessed from a laptop over Wi-Fi without requiring a dedicated monitor.
+
+The Raspberry Pi OS was written to the microSD card, and the Raspberry Pi was powered on for testing. The power and activity LEDs indicated that the Raspberry Pi was receiving power and accessing the SD card.
+
+During the setup, however, the SD card encountered several issues. Raspberry Pi Imager reported that verification of the written data failed because the contents of the SD card differed from what was written. Attempts to format the card through Windows also failed. DiskPart detected the SD card as a 31 GB removable disk, but attempting to clean the disk resulted in a **"The device is not ready"** error.
+
+As a result, the Raspberry Pi could not yet be successfully configured for the planned Wi-Fi-based headless connection. Further testing of the SD card and card reader is required before continuing with the Raspberry Pi setup.
+
+![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure.jpeg)
 
 **Progress:** 🚧 In Progress
+
+**Issue:** SD card write and verification failure
+
+**Next step:** Test the SD card/card reader and successfully install Raspberry Pi OS before continuing with the Wi-Fi and headless Raspberry Pi setup.
