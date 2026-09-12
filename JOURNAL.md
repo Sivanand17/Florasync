@@ -43,3 +43,34 @@ Also learned how to use Raspberry Pi Imager, configure Wi-Fi and SSH, identify S
 **Issue:** SD card write and verification failure
 
 **Next step:** Already tested the SD card for many times so i am going to buy new SD card.
+
+## September 12, 11:00 PM: Purchased Components for FloraSync
+
+Purchased several electronic and mechanical components required for the continued development of the **FloraSync smart agriculture system**. These components will be used across different subsystems, particularly the **AgriBot fertilizer spraying system**, power supply setup, and LCD-based monitoring systems.
+
+The components purchased were:
+
+- **R385 DC 6V–12V Diaphragm Based Water Pump ET6106** — 2 units
+- **100mm White Plastic Cable Ties ET8118** — 1 pack of 100
+- **16×2 LCD JHD Display with Yellow-Green Backlight ET5417** — 1 unit
+- **LCD I2C/IIC Serial Interface Adapter Module ET5424** — 1 unit
+- **DMEGC 18650 3.7V 2600mAh EV Grade NMC Li-ion Battery ET7393** — 3 units
+- **3-Cell 18650 Battery Holder in Series ET8037** — 1 unit
+
+The two diaphragm-based water pumps will be used for the **AgriBot fertilizer spraying system**. The cable ties will help with wire management and securing components during the construction of the project.
+
+The **16×2 LCD** and **I2C adapter module** will be used for displaying system information, sensor readings, and system status while reducing the number of microcontroller GPIO pins required for the LCD connection.
+
+The three **18650 Li-ion batteries** and the **3-cell series battery holder** will be used to develop a portable power supply for suitable FloraSync hardware components.
+
+These components will help continue the hardware development and integration of the different subsystems of the FloraSync project.
+
+![Components Purchased](images/components-purchased.png)
+
+**Total time spent:** 30 minutes
+
+**Progress:** Purchased important hardware components required for the continued development of FloraSync.
+
+**Components purchased:** 2 diaphragm water pumps, 100 cable ties, 1 16×2 LCD, 1 LCD I2C adapter, 3× 18650 Li-ion batteries, and 1 three-cell series battery holder.
+
+**Next step:** Test the newly purchased components and begin integrating them into their respective FloraSync subsystems.
