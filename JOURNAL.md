@@ -37,8 +37,9 @@ As a result, the Raspberry Pi could not yet be successfully configured for the p
 
 **Total time spent:** 2 hours
 
-**Progress:** 🚧 In Progress
+**Progress:** 🚧 In Progress — Learned the purpose of using an SD card as the Raspberry Pi's main storage for the operating system and configuration. 
+Also learned how to use Raspberry Pi Imager, configure Wi-Fi and SSH, identify SD-card issues, and troubleshoot write and verification failures.
 
 **Issue:** SD card write and verification failure
 
-**Next step:** Test the SD card/card reader and successfully install Raspberry Pi OS before continuing with the Wi-Fi and headless Raspberry Pi setup.
+**Next step:** Already tested the SD card for many times so i am going to buy new SD card.
