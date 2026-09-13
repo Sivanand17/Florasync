@@ -88,7 +88,7 @@ The components were positioned on the dotted PCB according to the planned arrang
 With the soldering and wiring completed, the Desktop Companion hardware is now ready for **testing and integration with the FloraSync system**.
 
 ![Desktop Companion Soldering](images/desktop-companion.jpeg)
-![Desktop Companion Soldering](images/desktop-companion2.jpeg)
+![Desktop Companion Soldering](images/desktop-companion3.jpeg)
 
 
 **Total time spent:** 1 hour and 30 minutes
