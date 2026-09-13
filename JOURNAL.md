@@ -75,4 +75,24 @@ These components will help continue the hardware development and integration of 
 
 **Components purchased:** 2 diaphragm water pumps, 100 cable ties, 1 16×2 LCD, 1 LCD I2C adapter, 3× 18650 Li-ion batteries, and 1 three-cell series battery holder.
 
-**Next step:** Test the newly purchased components and begin integrating them into their respective FloraSync subsystems.
+**Next step:** Test the newly purchased components and begin integrating them into their respective FloraSync subsystems.\
+
+---
+
+## September 13, 1:00 PM: Completed Soldering and Wiring of Desktop Companion
+
+Completed the hardware assembly of the **FloraSync Desktop Companion** by soldering the required components and wires onto a **dotted PCB**. All the planned wire connections were made and securely soldered to create a more permanent and organized circuit.
+
+The components were positioned on the dotted PCB according to the planned arrangement, and the necessary **power, ground, and signal wires** were connected. Care was taken while soldering to ensure that the connections were secure and properly arranged.
+
+With the soldering and wiring completed, the Desktop Companion hardware is now ready for **testing and integration with the FloraSync system**.
+
+![Desktop Companion Soldering](images/desktop-companion.jpeg)
+![Desktop Companion Soldering](images/desktop-companion2.jpeg)
+
+
+**Total time spent:** 1 hour and 30 minutes
+
+**Progress:** Completed the soldering and wiring of the Desktop Companion circuit on the dotted PCB.
+
+**Hardware completed:** Dotted PCB assembly with all required component and wire connections.
