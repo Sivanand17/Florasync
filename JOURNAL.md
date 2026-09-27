@@ -124,9 +124,9 @@ The camera stream was integrated into the React-based FloraSync website using th
 
 ![ESP32-CAM Setup](images/esp32_cam3.jpeg)
 
-![ESP32-CAM Live Feed on Website](images/esp32_cam1.jpeg)
-
 ![ESP32-CAM Live Feed on Website](images/esp32_cam2.jpeg)
+
+![ESP32-CAM Live Feed on Website](images/esp32_cam1.jpeg)
 
 The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
 
