@@ -113,3 +113,21 @@ Next Step is to complete the whole coding and make it work using mqtt
 **Progress:** Completed the soldering and wiring of the Desktop Companion circuit on the dotted PCB.
 
 **Hardware completed:** Dotted PCB assembly with all required component and wire connections.
+
+---
+
+# September 27 1:30: Connected ESP32-CAM with the Website
+
+Successfully completed the connection between the ESP32-CAM and the FloraSync web dashboard. The ESP32-CAM was configured to connect to the local Wi-Fi network and provide a live video stream from the robot.
+
+The camera stream was integrated into the React-based FloraSync website using the ESP32-CAM stream URL. After troubleshooting the camera IP address and network connection, the live camera feed was successfully displayed directly on the dashboard.
+
+![ESP32-CAM Setup](images/esp32_cam_1.jpeg)
+
+![ESP32-CAM Live Feed on Website](images/esp32_cam_2.jpeg)
+
+The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
+
+**Total time spent:** 2 and 30 hours
+
+---
