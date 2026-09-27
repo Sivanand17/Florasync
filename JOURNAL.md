@@ -102,7 +102,7 @@ This completes the turbidity sensing hardware setup and prepares the system for 
 
 Next Step is to complete the whole coding and make it work using mqtt
 
-![Turbidity Sensor and ESP32 Connection](images/aquasync.jpeg)
+![Turbidity Sensor and ESP32 Connection](images/aquasync_1.jpeg)
 
 ![Turbidity Sensor Voltage Divider](images/aquasync_2.jpeg)
 
