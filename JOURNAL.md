@@ -122,9 +122,9 @@ Successfully completed the connection between the ESP32-CAM and the FloraSync we
 
 The camera stream was integrated into the React-based FloraSync website using the ESP32-CAM stream URL. After troubleshooting the camera IP address and network connection, the live camera feed was successfully displayed directly on the dashboard.
 
-![ESP32-CAM Setup](images/esp32cam_1.jpeg)
+![ESP32-CAM Setup](images/esp32_cam1.jpeg)
 
-![ESP32-CAM Live Feed on Website](images/esp32cam_2.jpeg)
+![ESP32-CAM Live Feed on Website](images/esp32_cam1.jpeg)
 
 The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
 
