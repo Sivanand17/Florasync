@@ -90,8 +90,25 @@ With the soldering and wiring completed, the Desktop Companion hardware is now r
 ![Desktop Companion Soldering](images/desktop-companion.jpeg)
 ![Desktop Companion Soldering](images/desktop-companion3.jpeg)
 
+---
 
-**Total time spent:** 1 hour and 30 minutes
+# September 27: Completed Turbidity Sensor Connections and Voltage Divider
+
+The turbidity monitoring hardware for the smart pond safety system has been successfully completed. The turbidity sensor was connected to the ESP32 using a dotted PCB, with a two-resistor voltage divider implemented to safely interface the sensor's analog output with the ESP32 ADC.
+
+The voltage divider was constructed using two 10kΩ resistors, reducing the sensor's analog voltage before connecting it to GPIO34. All required connections were soldered securely on the dotted PCB, completing the hardware interface between the turbidity sensor and ESP32.
+
+This completes the turbidity sensing hardware setup and prepares the system for the next stage of testing, calibration, and water-quality monitoring.
+
+Next Step is to complete the whole coding and make it work using mqtt
+
+![Turbidity Sensor and ESP32 Connection](images/aquasync.jpeg)
+
+![Turbidity Sensor Voltage Divider](images/aquasync_2.jpeg)
+
+**Components completed:** Turbidity Sensor, ESP32, Dotted PCB, 2 × 10kΩ Resistors
+
+**Total time spent:** 1 hour and 40 minutes
 
 **Progress:** Completed the soldering and wiring of the Desktop Companion circuit on the dotted PCB.
 
