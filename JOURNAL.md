@@ -128,6 +128,21 @@ The camera stream was integrated into the React-based FloraSync website using th
 
 ![ESP32-CAM Live Feed on Website](images/esp32_cam1.jpeg)
 
+
+---
+
+# September 28: Completed the BMS and Motor System For Agribot
+
+The battery management and motor system for the agribot pesticide spraying Unit has been successfully completed. A 3-cell (3S) lithium-ion battery pack was integrated with a 3S BMS for battery protection and power management. The motor/pump system was connected through the relay module and tested successfully. The motors operated properly during testing, confirming that the power distribution and switching system are functioning as expected.
+
+![BMS and Motor System](images/bms.jpeg)
+
+![BMS and Motor System](images/sprayingsystem.jpeg)
+
+**Total time spent:** 2 hours
+
+---
+
 The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
 
 **Total time spent:** 2 and 30 hours
