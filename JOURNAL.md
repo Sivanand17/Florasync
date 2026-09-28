@@ -17,7 +17,7 @@ The hardware wiring and insulation work for the prototype has been successfully 
 
 ![Hardware Connection and Insulation](images/WhatsApp%20Image%202026-09-12%20at%201.38.45%20PM2.jpeg)
 
-**Total time spent:** 2 hours 30 minutes
+**Total time spent:** 3 hours
 
 ---
 
@@ -35,7 +35,7 @@ As a result, the Raspberry Pi could not yet be successfully configured for the p
 ![Raspberry Pi SD Card Setup Failure](images/raspberry-pi-sd-card-failure2.jpeg.png)
 
 
-**Total time spent:** 2 hours
+**Total time spent:** 4 hours
 
 **Progress:**  In Progress — Learned the purpose of using an SD card as the Raspberry Pi's main storage for the operating system and configuration. 
 Also learned how to use Raspberry Pi Imager, configure Wi-Fi and SSH, identify SD-card issues, and troubleshoot write and verification failures.
@@ -69,7 +69,7 @@ These components will help continue the hardware development and integration of 
 
 ![Components Purchased](images/components-purchased.png)
 
-**Total time spent:** 30 minutes
+**Total time spent:** 1 hour
 
 **Progress:** Purchased important hardware components required for the continued development of FloraSync.
 
@@ -90,6 +90,8 @@ With the soldering and wiring completed, the Desktop Companion hardware is now r
 ![Desktop Companion Soldering](images/desktop-companion.jpeg)
 ![Desktop Companion Soldering](images/desktop-companion3.jpeg)
 
+**Total time spent:** 5 hours and 30 minutes
+
 ---
 
 # September 27: Completed Turbidity Sensor Connections and Voltage Divider
@@ -108,7 +110,7 @@ Next Step is to complete the whole coding and make it work using mqtt
 
 **Components completed:** Turbidity Sensor, ESP32, Dotted PCB, 2 × 10kΩ Resistors
 
-**Total time spent:** 1 hour and 40 minutes
+**Total time spent:** 2 hours
 
 **Progress:** Completed the soldering and wiring of the Desktop Companion circuit on the dotted PCB.
 
@@ -128,6 +130,7 @@ The camera stream was integrated into the React-based FloraSync website using th
 
 ![ESP32-CAM Live Feed on Website](images/esp32_cam1.jpeg)
 
+**Total time spent:** 5 hours and 30 minutes
 
 ---
 
@@ -139,7 +142,7 @@ The battery management and motor system for the agribot pesticide spraying Unit 
 
 ![BMS and Motor System](images/sprayingsystem.jpeg)
 
-**Total time spent:** 3 hours and 30 minutes
+**Total time spent:** 5 hours and 30 minutes
 
 ---
 
