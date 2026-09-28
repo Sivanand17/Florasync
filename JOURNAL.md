@@ -139,7 +139,7 @@ The battery management and motor system for the agribot pesticide spraying Unit 
 
 ![BMS and Motor System](images/sprayingsystem.jpeg)
 
-**Total time spent:** 2 hours
+**Total time spent:** 3 hours and 30 minutes
 
 ---
 
