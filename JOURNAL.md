@@ -146,6 +146,26 @@ The battery management and motor system for the agribot pesticide spraying Unit 
 
 ---
 
+# October 6: Completed the AgriBot Mechanical Assembly
+
+The mechanical development of the AgriBot has been successfully completed. The robot chassis was assembled with four wheels, DC motors, and the required hardware components mounted securely on the wooden base.
+
+A T-shaped PVC pipe structure was also fabricated and attached to the AgriBot using M-Seal to create a strong and stable connection. This structure will serve as the main support for the fertilizer spraying mechanism.
+
+The pumps, motor driver, relay module, battery pack, and other components were positioned on the chassis. With the mechanical structure completed, the AgriBot is now ready for further wiring, programming, and integration of the fertilizer spraying system.
+
+![AgriBot Mechanical Assembly](images/agribot_1.jpeg)
+
+![AgriBot Mechanical Assembly](images/agribot_2.jpeg)
+
+![AgriBot Mechanical Assembly](images/agribot_3.jpeg)
+
+![AgriBot Mechanical Assembly](images/agribot_4.jpeg)
+
+**Total time spent:** 10 hours
+
+---
+
 The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
 
 **Total time spent:** 2 and 30 hours
