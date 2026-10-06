@@ -166,8 +166,3 @@ The pumps, motor driver, relay module, battery pack, and other components were p
 
 ---
 
-The successful integration allows the AgriBot camera to be monitored remotely through the FloraSync dashboard, providing a real-time visual view of the robot's surroundings.
-
-**Total time spent:** 2 and 30 hours
-
----
