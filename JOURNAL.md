@@ -175,16 +175,14 @@ To resolve this issue, a replacement **ERD 9V 2A Adapter ET5616** was selected f
 
 The GSM module's power supply will be tested again after obtaining the replacement adapter. Once stable power is confirmed, the next step is to verify GSM network registration and test SMS alerts before integrating the module with the Arduino UNO and the laptop-based YOLO animal detection model.
 
-**Total time spent:** 30 minutes
+**Total time spent:** 1 hour
 
 **Progress:** Identified a possible fault with the original power adapter and selected a replacement.
 
 **Issue:** No measurable voltage output from the original adapter during testing.
 
 ![Adapter](images/adapter.jpeg)
-![Adapter](images/adapter1.jpeg)
-
-
+![Adapter](images/adapter1.png)
 
 **Next step:** Test the replacement adapter's output and polarity, power the SIM800A safely, and verify GSM communication and SMS delivery.
 
