@@ -166,3 +166,28 @@ The pumps, motor driver, relay module, battery pack, and other components were p
 
 ---
 
+
+## October 10: Tested and Replaced the GSM Power Adapter
+
+The power supply for the SIM800A GSM module was tested as part of the FloraSync animal intrusion alert system. During testing, the 9V 2A adapter failed to provide a measurable voltage output, indicating a possible fault with the adapter or its cable.
+
+To resolve this issue, a replacement **ERD 9V 2A Adapter ET5616** was selected for purchase. The replacement adapter is intended to power the SIM800A GSM module through its DC input jack, which is specified for a 9–12V supply.
+
+The GSM module's power supply will be tested again after obtaining the replacement adapter. Once stable power is confirmed, the next step is to verify GSM network registration and test SMS alerts before integrating the module with the Arduino UNO and the laptop-based YOLO animal detection model.
+
+**Total time spent:** 30 minutes
+
+**Progress:** Identified a possible fault with the original power adapter and selected a replacement.
+
+**Issue:** No measurable voltage output from the original adapter during testing.
+
+![Adapter](images/adapter.jpeg)
+![Adapter](images/adapter1.jpeg)
+
+
+
+**Next step:** Test the replacement adapter's output and polarity, power the SIM800A safely, and verify GSM communication and SMS delivery.
+
+---
+
+
