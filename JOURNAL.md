@@ -200,6 +200,8 @@ The deployed application was then integrated into the main FloraSync website thr
 
 ![Plant Disease Detection Model Training Results](images/plant_disease_3.png)
 
-**Total time spent:** 6 Hours and 30 minutes
+![Plant Disease Detection Model Training Results](images/plant_disease_4.png)
+
+**Total time spent:** 7 Hours and 15 minutes
 
 ---
