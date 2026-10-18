@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+  <title>Smart Farming Dashboard</title>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+
+      background:
+      linear-gradient(
+      135deg,
+      #071b26,
+      #0b2e3d,
+      #14532d
+      );
+
+      min-height:100vh;
+
+      color:white;
+
+      padding:30px;
+    }
+
+    h1{
+
+      text-align:center;
+
+      margin-bottom:40px;
+
+      font-size:42px;
+
+      color:#d9ffea;
+    }
+
+    .container{
+
+      display:grid;
+
+      grid-template-columns:
+      repeat(auto-fit,minmax(280px,1fr));
+
+      gap:25px;
+    }
+
+    .card{
+
+      background:
+      rgba(255,255,255,0.08);
+
+      border-radius:25px;
+
+      padding:30px;
+
+      backdrop-filter:blur(12px);
+
+      box-shadow:
+      0 10px 25px rgba(0,0,0,0.35);
+
+      transition:0.3s;
+    }
+
+    .card:hover{
+
+      transform:translateY(-5px);
+    }
+
+    .title{
+
+      font-size:22px;
+
+      margin-bottom:20px;
+
+      color:#b8ffe0;
+    }
+
+    .value{
+
+      font-size:55px;
+
+      font-weight:bold;
+    }
+
+    .small{
+
+      margin-top:10px;
+
+      color:#cccccc;
+    }
+
+    #soil{
+
+      color:#4dffb8;
+    }
+
+    .on{
+
+      color:#00ff88;
+    }
+
+    .off{
+
+      color:#ff5c7a;
+    }
+
+    #status{
+
+      color:#4dc3ff;
+    }
+
+
+
+    /* Pump Row */
+
+    .pump-row{
+
+      display:flex;
+
+      justify-content:space-between;
+
+      align-items:center;
+
+      margin-top:20px;
+    }
+
+
+
+    /* Toggle Switch */
+
+    .switch {
+
+      position: relative;
+
+      display: inline-block;
+
+      width: 70px;
+
+      height: 38px;
+    }
+
+    .switch input {
+
+      opacity: 0;
+
+      width: 0;
+
+      height: 0;
+    }
+
+    .slider {
+
+      position: absolute;
+
+      cursor: pointer;
+
+      top: 0;
+
+      left: 0;
+
+      right: 0;
+
+      bottom: 0;
+
+      background-color: #ff5c7a;
+
+      transition: .4s;
+
+      border-radius: 34px;
+    }
+
+    .slider:before {
+
+      position: absolute;
+
+      content: "";
+
+      height: 28px;
+
+      width: 28px;
+
+      left: 5px;
+
+      bottom: 5px;
+
+      background-color: white;
+
+      transition: .4s;
+
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+
+      background-color: #00ff88;
+    }
+
+    input:checked + .slider:before {
+
+      transform: translateX(32px);
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>🌱 Smart Farming Dashboard</h1>
+
+
+
+  <div class="container">
+
+
+
+    <!-- Soil Moisture -->
+
+    <div class="card">
+
+      <div class="title">
+        💧 Soil Moisture
+      </div>
+
+      <div class="value" id="soil">
+        --
+      </div>
+
+      <div class="small">
+        Live Soil Moisture
+      </div>
+
+    </div>
+
+
+
+    <!-- Pump -->
+
+    <div class="card">
+
+      <div class="title">
+        🚰 Water Pump
+      </div>
+
+
+
+      <div class="pump-row">
+
+        <div class="value off" id="pump">
+          OFF
+        </div>
+
+
+
+        <!-- Toggle -->
+
+        <label class="switch">
+
+          <input
+          type="checkbox"
+          id="pumpToggle"
+          onchange="togglePump()">
+
+          <span class="slider"></span>
+
+        </label>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- MQTT -->
+
+    <div class="card">
+
+      <div class="title">
+        📡 MQTT Status
+      </div>
+
+      <div class="value" id="status">
+        OFFLINE
+      </div>
+
+      <div class="small">
+        ESP32 Connection
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <script>
+
+// ================= MQTT CONNECTION =================
+
+const client = mqtt.connect(
+  'wss://broker.hivemq.com:8884/mqtt'
+);
+
+
+
+// ================= VARIABLES =================
+
+let lastMessageTime = Date.now();
+
+let esp32Online = false;
+
+
+
+// ================= MQTT CONNECT =================
+
+client.on('connect', () => {
+
+  console.log("MQTT Connected");
+
+  client.subscribe(
+    'sivanand/farm/data'
+  );
+
+});
+
+
+
+// ================= RECEIVE MQTT DATA =================
+
+client.on('message',
+(topic, message) => {
+
+  console.log(message.toString());
+
+
+
+  // ESP32 is online
+
+  esp32Online = true;
+
+
+
+  // Update last message time
+
+  lastMessageTime = Date.now();
+
+
+
+  // Parse JSON
+
+  const data =
+  JSON.parse(message.toString());
+
+
+
+  // ================= SOIL =================
+
+  document.getElementById("soil")
+  .innerHTML = data.soil + "%";
+
+
+
+  // ================= PUMP =================
+
+  const pumpElement =
+  document.getElementById("pump");
+
+
+
+  pumpElement.innerHTML =
+  data.pump;
+
+
+
+  // Toggle sync
+
+  document.getElementById(
+  "pumpToggle").checked =
+  (data.pump == "ON");
+
+
+
+  // Colors
+
+  if(data.pump == "ON") {
+
+    pumpElement.className =
+    "value on";
+
+  } else {
+
+    pumpElement.className =
+    "value off";
+  }
+
+});
+
+
+
+
+// ================= TOGGLE PUMP =================
+
+function togglePump(){
+
+  const toggle =
+  document.getElementById(
+  "pumpToggle");
+
+
+
+  if(toggle.checked){
+
+    document.getElementById(
+    "onSound").play();
+
+    sendCommand("ON");
+
+  } else {
+
+    document.getElementById(
+    "offSound").play();
+
+    sendCommand("OFF");
+  }
+}
+
+
+
+
+// ================= SEND MQTT COMMAND =================
+
+function sendCommand(command){
+
+  client.publish(
+    'smartfarm/control',
+    command
+  );
+
+
+
+  console.log(
+    "Command Sent: " + command
+  );
+}
+
+
+
+
+// ================= HEARTBEAT =================
+
+setInterval(() => {
+
+  const statusElement =
+  document.getElementById(
+  "status");
+
+
+
+  // No ESP32 data received yet
+
+  if(!esp32Online){
+
+    statusElement.innerHTML =
+    "OFFLINE";
+
+
+
+    statusElement.style.color =
+    "#ff5c7a";
+
+
+
+    return;
+  }
+
+
+
+  const now = Date.now();
+
+  const diff =
+  now - lastMessageTime;
+
+
+
+  // ESP32 disconnected
+
+  if(diff > 10000){
+
+    statusElement.innerHTML =
+    "OFFLINE";
+
+
+
+    statusElement.style.color =
+    "#ff5c7a";
+
+  } else {
+
+    statusElement.innerHTML =
+    "ONLINE";
+
+
+
+    statusElement.style.color =
+    "#00ff88";
+  }
+
+}, 1000);
+
+  </script>
+  <!-- Sounds -->
+
+<audio id="onSound" src="toggling_sound.mp3"></audio>
+
+<audio id="offSound" src="toggling_sound.mp3"></audio>
+</body>
+
+</html>

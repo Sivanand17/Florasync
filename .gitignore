@@ -1,0 +1,35 @@
+
+# Python environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Node.js dependencies and build output
+node_modules/
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Training artifacts and logs
+runs/
+logs/
+*.log
+
+# Local editor files
+.vscode/
+.idea/
+
+# Large plant disease datasets
+plant_disease_detection-main/Plant_Disease_Prediction/dataset/
+plant_disease_detection/train/
+plant_disease_detection/valid/
+plant_disease_detection/test/
+
+# macOS metadata
+.DS_Store
