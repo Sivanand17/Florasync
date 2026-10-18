@@ -188,4 +188,18 @@ The GSM module's power supply will be tested again after obtaining the replaceme
 
 ---
 
+# October 18: Completed Plant Disease Detection AI and Website Integration
 
+The Plant Disease Detection AI system has been successfully developed and deployed as part of the FloraSync smart agriculture project. The model is accessible through a web application, allowing users to upload plant images and obtain AI-based disease predictions.
+
+The deployed application was then integrated into the main FloraSync website through the Plant Disease AI section, making it accessible alongside the existing AgriBot dashboard and other smart agriculture features. This milestone brings FloraSync one step closer to becoming a unified platform for intelligent crop monitoring and agricultural automation.
+
+![Plant Disease Detection AI Web Application](images/plant_disease_1.png)
+
+![Plant Disease AI Integrated into the FloraSync Dashboard](images/plant_disease_2.png)
+
+![Plant Disease Detection Model Training Results](images/plant_disease_3.png)
+
+**Total time spent:** 6 Hours and 30 minutes
+
+---
