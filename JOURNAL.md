@@ -205,3 +205,17 @@ The deployed application was then integrated into the main FloraSync website thr
 **Total time spent:** 7 Hours and 15 minutes
 
 ---
+
+
+# October 19: Completed Sensor Connections on Dotted PCB
+
+The soldering and hardware connections for the AquaSync water-quality monitoring system have been successfully completed on the dotted PCB. The turbidity sensor, pH sensor, and waterproof DS18B20 temperature sensor have been connected to the ESP32, preparing the system for the next stage of testing, calibration, and integration with the AquaSync dashboard.
+
+![AquaSync Sensor Connections](images/aquasync_3.jpeg)
+
+![AquaSync Dotted PCB Soldering](images/aquasync_4.jpeg)
+
+**Total time spent:** 3 hours and 45 minutes
+
+---
+
