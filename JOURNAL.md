@@ -230,6 +230,24 @@ These improvements complete the implementation of the automatic pump control log
 
 ![AquaSync Automatic Pump Control](images/aquasync_6.jpeg)
 
-**Total time spent:** 5 hours 30 minutes
+**Total time spent:** 6 hours
+
+---
+
+# October 29: Completed Water Pump Wiring, Servo Motor Mounting, and Control Integration
+
+The hardware integration of the AgriBot fertilizer spraying system has progressed significantly. The wiring for both water pumps and their relay modules has been completed, and the components have been mounted in their appropriate positions on the robot chassis. Two servo motors have also been installed to support the spraying mechanism, with their wiring connected to the ESP32 controller.
+
+The Arduino code has been implemented to control both water pumps and servo motors through the MQTT-based web dashboard. Each pump is controlled independently through its corresponding relay, while the associated servo motor moves to its configured position when the pump is switched ON or OFF. The ESP32 also handles the robot's wheel movement commands, including forward, backward, left, right, and stop, through MQTT communication.
+
+A motor safety timeout has also been implemented to stop the wheel motors when movement commands are no longer received within the configured time limit. With the pump wiring, servo mounting, and control code integrated, the AgriBot is ready for further testing of the fertilizer spraying mechanism and complete system operation.
+
+![AgriBot Water Pump Wiring](images/agribot_5.jpeg)
+
+![AgriBot Servo Motor Installation](images/agribot_6.jpeg)
+
+
+
+**Total time spent:** 8 hours
 
 ---
