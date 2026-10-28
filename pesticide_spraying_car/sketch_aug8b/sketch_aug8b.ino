@@ -3,6 +3,7 @@
 #include <WiFiClientSecure.h>
 
 #include <PubSubClient.h>
+#include <ESP32Servo.h>
 
 unsigned long lastHeartbeat = 0;
 
@@ -12,9 +13,9 @@ unsigned long lastHeartbeat = 0;
 
 // =====================================================
 
-const char* ssid = "FTTH-29";
+const char* ssid = "OnePlus Nord 5 F2E2";
 
-const char* wifiPassword = "jr290129";
+const char* wifiPassword = "hotspot7";
 
 // =====================================================
 
@@ -60,9 +61,17 @@ const char* motor2Topic = "agribot/motor2";
 #define PUMP1_RELAY 32
 #define PUMP2_RELAY 33
 
-// Active-LOW relay modules
-#define RELAY_ON LOW
-#define RELAY_OFF HIGH
+// Relay logic adjusted to match the observed hardware behavior:
+// ON energizes the relay; OFF de-energizes it.
+#define RELAY_ON HIGH
+#define RELAY_OFF LOW
+
+// Servo signal pins
+#define SERVO1_PIN 18
+#define SERVO2_PIN 19
+
+Servo sprayServo1;
+Servo sprayServo2;
 
 // =====================================================
 
@@ -234,10 +243,12 @@ void mqttCallback(
   if (String(topic) == motor1Topic) {
     if (command == "ON") {
       digitalWrite(PUMP1_RELAY, RELAY_ON);
-      Serial.println("Water Pump 1 -> ON");
+      sprayServo1.write(180);
+      Serial.println("Water Pump 1 -> ON; Servo 1 -> 180 degrees");
     } else if (command == "OFF") {
       digitalWrite(PUMP1_RELAY, RELAY_OFF);
-      Serial.println("Water Pump 1 -> OFF");
+      sprayServo1.write(0);
+      Serial.println("Water Pump 1 -> OFF; Servo 1 -> 0 degrees");
     } else {
       Serial.println("Unknown Pump 1 command; state unchanged");
     }
@@ -245,10 +256,12 @@ void mqttCallback(
   else if (String(topic) == motor2Topic) {
     if (command == "ON") {
       digitalWrite(PUMP2_RELAY, RELAY_ON);
-      Serial.println("Water Pump 2 -> ON");
+      sprayServo2.write(180);
+      Serial.println("Water Pump 2 -> ON; Servo 2 -> 180 degrees");
     } else if (command == "OFF") {
       digitalWrite(PUMP2_RELAY, RELAY_OFF);
-      Serial.println("Water Pump 2 -> OFF");
+      sprayServo2.write(0);
+      Serial.println("Water Pump 2 -> OFF; Servo 2 -> 0 degrees");
     } else {
       Serial.println("Unknown Pump 2 command; state unchanged");
     }
@@ -549,6 +562,14 @@ void setup() {
   pinMode(PUMP2_RELAY, OUTPUT);
   digitalWrite(PUMP1_RELAY, RELAY_OFF);
   digitalWrite(PUMP2_RELAY, RELAY_OFF);
+
+  // Initialize both spray-head servos at their resting position.
+  sprayServo1.setPeriodHertz(50);
+  sprayServo2.setPeriodHertz(50);
+  sprayServo1.attach(SERVO1_PIN, 500, 2400);
+  sprayServo2.attach(SERVO2_PIN, 500, 2400);
+  sprayServo1.write(0);
+  sprayServo2.write(0);
 
   motorStop();
 
