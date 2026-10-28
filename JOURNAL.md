@@ -218,4 +218,18 @@ The soldering and hardware connections for the AquaSync water-quality monitoring
 **Total time spent:** 3 hours and 45 minutes
 
 ---
+# October 29: Completed Relay Integration, Automatic Pump Control, and OLED Display
 
+The relay module has been successfully integrated into the AquaSync water-quality monitoring system. The Arduino code for automatic turbidity-based pump control has been completed, allowing the submersible pump to turn ON when the water becomes very cloudy and turn OFF when the water is clear.
+
+The OLED display has also been successfully integrated with the ESP32 to display the water-quality sensor readings, including pH, water temperature, and turbidity. The display layout has been adjusted to show the readings in the working lower portion of the OLED screen.
+
+These improvements complete the implementation of the automatic pump control logic and local OLED monitoring, preparing AquaSync for further testing, calibration, and dashboard integration.
+
+![AquaSync Relay Module Integration](images/aquasync_5.jpeg)
+
+![AquaSync Automatic Pump Control](images/aquasync_6.jpeg)
+
+**Total time spent:** 5 hours 30 minutes
+
+---
