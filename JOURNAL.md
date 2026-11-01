@@ -251,3 +251,46 @@ A motor safety timeout has also been implemented to stop the wheel motors when m
 **Total time spent:** 8 hours
 
 ---
+
+# November 1: Completed MQTT Motor Testing and Security-Based Aquarium Pump Integration
+
+The AgriBot motor control system was successfully tested, confirming that the robot's wheel motors could be operated through the MQTT-based web dashboard. Following the successful test, work continued on integrating the aquarium pump control outputs into the existing ESP32 controller while maintaining the keypad-based security system.
+
+During the integration process, an issue occurred with the modified ESP32 code. Although the original motor-control code had worked correctly, the motors stopped responding after the security system was integrated. Initial testing confirmed that MQTT messages were reaching the ESP32, but the movement commands were not always being executed. This required debugging the MQTT message handling, command recognition, and security authorization logic.
+
+One of the main difficulties was related to the security communication between the Arduino Uno and ESP32. The ESP32 required continuous authorization messages from the Uno to maintain the unlocked state. When the authorization heartbeat was interrupted, the system entered a locked state and rejected movement commands. The security logic was therefore improved to handle heartbeat interruptions more reliably. MQTT command processing was also improved to handle unwanted spaces and newline characters in incoming messages.
+
+After making the necessary corrections, the AgriBot motor test was successfully completed again, confirming that the existing movement controls were functioning correctly alongside the keypad security system.
+
+The next stage involved integrating the aquarium pump outputs into the same ESP32 controller. Two relay outputs were assigned for independent pump control: `PUMP1_RELAY` on GPIO 32 and `PUMP2_RELAY` on GPIO 33. Both outputs are controlled through the existing MQTT communication system using the topics `agribot/motor1` and `agribot/motor2`.
+
+An additional security condition was implemented to ensure that both aquarium pumps can only be switched ON when the robot is unlocked through the keypad. Whenever the system is locked or the security communication is interrupted, both pumps are automatically switched OFF. OFF commands remain available even while the system is locked to ensure that the pumps can always be stopped.
+
+With these improvements, the AgriBot movement controls, aquarium pump relay outputs, MQTT communication, and keypad-based security system are integrated into a common ESP32 control system. This provides a more secure and coordinated control structure for the FloraSync platform.
+
+## Challenges and Difficulties Faced
+
+- Motor commands stopped working after integrating the keypad security system.
+- Debugging MQTT message reception and movement command recognition.
+- Resolving authorization heartbeat interruptions between the Arduino Uno and ESP32.
+- Correcting the security logic so that the system could recover from temporary communication interruptions.
+- Ensuring that motor movement and aquarium pump commands were blocked whenever the system was locked.
+- Maintaining the existing motor, pump, servo, and MQTT functionality without disrupting previously completed features.
+
+## Final Status
+
+**AgriBot motor testing:** Successfully completed.
+
+**Aquarium pump integration:** Integrated with the ESP32 through two relay outputs.
+
+**Security integration:** Both aquarium pumps are protected by the keypad-based authentication system.
+
+**MQTT communication:** Used for independent pump and robot movement control.
+
+**Total time spent:** 10 hours
+
+---
+
+![AgriBot Motor Testing](images/lockingsystem1.jpeg)
+
+![Aquarium Pump Relay Integration](images/lockingsystem2.jpeg)
