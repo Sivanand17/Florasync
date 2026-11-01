@@ -4,6 +4,7 @@
 
 #include <PubSubClient.h>
 #include <ESP32Servo.h>
+#include <string.h>
 
 unsigned long lastHeartbeat = 0;
 
@@ -13,9 +14,9 @@ unsigned long lastHeartbeat = 0;
 
 // =====================================================
 
-const char* ssid = "OnePlus Nord 5 F2E2";
+const char* ssid = "FTTH-29";
 
-const char* wifiPassword = "hotspot7";
+const char* wifiPassword = "jr290129";
 
 // =====================================================
 
@@ -74,6 +75,35 @@ Servo sprayServo1;
 Servo sprayServo2;
 
 // =====================================================
+// KEYPAD SECURITY LINK (Arduino Uno <-> ESP32 UART2)
+// Uno D11 TX -> ESP32 GPIO25 RX through a voltage divider
+// Uno D10 RX <- ESP32 GPIO17 TX directly
+// Uno GND and ESP32 GND must be connected together.
+// =====================================================
+HardwareSerial SecuritySerial(2);
+
+bool robotAuthorized = false;       // Always locked at boot
+bool securityMessageSeen = false;
+bool securityArmed = false;         // Must see AUTH:L before accepting AUTH:U
+unsigned long lastSecurityMessage = 0;
+const unsigned long SECURITY_TIMEOUT_MS = 2500;
+
+char securityLine[24];
+byte securityLineLength = 0;
+
+// Print only authentication state changes; repeated UART heartbeat
+// messages remain silent so the Serial Monitor stays clean.
+char lastPrintedAuthState[7] = "";
+
+void printAuthStateIfChanged(const char* state) {
+  if (strcmp(lastPrintedAuthState, state) != 0) {
+    Serial.println(state);
+    strncpy(lastPrintedAuthState, state, sizeof(lastPrintedAuthState) - 1);
+    lastPrintedAuthState[sizeof(lastPrintedAuthState) - 1] = '\0';
+  }
+}
+
+// =====================================================
 
 // MQTT
 
@@ -111,6 +141,74 @@ void motorStop() {
 
   digitalWrite(RB, LOW);
 
+}
+
+// Turn OFF every actuator controlled by this sketch.
+void forceAllActuatorsOff() {
+  motorStop();
+  digitalWrite(PUMP1_RELAY, RELAY_OFF);
+  digitalWrite(PUMP2_RELAY, RELAY_OFF);
+  sprayServo1.write(0);
+  sprayServo2.write(0);
+}
+
+// Only a fresh AUTH:U message from the Uno authorizes operation.
+bool securityIsValid() {
+  if (robotAuthorized &&
+      (millis() - lastSecurityMessage > SECURITY_TIMEOUT_MS)) {
+    robotAuthorized = false;
+    // Keep the link armed after a temporary timeout. A fresh AUTH:U heartbeat
+    // can restore authorization; a real lock still sends AUTH:L and disarms.
+    securityMessageSeen = false;
+    forceAllActuatorsOff();
+    printAuthStateIfChanged("AUTH:L");
+  }
+
+  return robotAuthorized && securityMessageSeen &&
+         (millis() - lastSecurityMessage <= SECURITY_TIMEOUT_MS);
+}
+
+// Non-blocking parser for the Uno's AUTH:U / AUTH:L status messages.
+void processSecuritySerial() {
+  while (SecuritySerial.available() > 0) {
+    char ch = (char)SecuritySerial.read();
+    if (ch == '\r') continue;
+
+    if (ch == '\n') {
+      securityLine[securityLineLength] = '\0';
+      securityLineLength = 0;
+
+      if (strcmp(securityLine, "AUTH:U") == 0) {
+        lastSecurityMessage = millis();
+        securityMessageSeen = true;
+
+        // After ESP32 boot or a link timeout, require the Uno to report
+        // LOCKED first. This prevents a stale unlocked state restoring access.
+        if (securityArmed && !robotAuthorized) {
+          robotAuthorized = true;
+          printAuthStateIfChanged("AUTH:U");
+          // Unlocking never starts movement automatically.
+          motorStop();
+        }
+      } else if (strcmp(securityLine, "AUTH:L") == 0) {
+        lastSecurityMessage = millis();
+        securityMessageSeen = true;
+        securityArmed = true;
+
+        robotAuthorized = false;
+        forceAllActuatorsOff();
+        printAuthStateIfChanged("AUTH:L");
+      }
+      continue;
+    }
+
+    if (securityLineLength < sizeof(securityLine) - 1) {
+      securityLine[securityLineLength++] = ch;
+    } else {
+      // Discard malformed/overlong lines.
+      securityLineLength = 0;
+    }
+  }
 }
 
 // =====================================================
@@ -219,6 +317,9 @@ void mqttCallback(
 
   }
 
+  // Remove accidental spaces/newlines from dashboard MQTT payloads.
+  command.trim();
+
   Serial.println();
 
   Serial.println("================================");
@@ -237,31 +338,61 @@ void mqttCallback(
 
   Serial.println("]");
 
+  // SECURITY GATE:
+  // STOP and pump OFF are always permitted. All other actuator commands
+  // require a fresh AUTH:U message from the keypad controller.
+  String incomingTopic = String(topic);
+  bool isMovementTopic = (incomingTopic == movementTopic);
+  bool isPumpTopic = (incomingTopic == motor1Topic || incomingTopic == motor2Topic);
+  bool isStopCommand = (isMovementTopic && command == "STOP");
+  bool isPumpOffCommand = (isPumpTopic && command == "OFF");
+
+  if (!isStopCommand && !isPumpOffCommand && !securityIsValid()) {
+    Serial.println("BLOCKED: Robot is LOCKED or security link is stale.");
+    forceAllActuatorsOff();
+    return;
+  }
+
   // ===================================================
-  // WATER PUMP CONTROL (dashboard topics: ON/OFF)
+  // AQUARIUM / WATER PUMP CONTROL
+  // Both relay outputs are permitted to turn ON ONLY while
+  // the keypad security link is freshly UNLOCKED.
+  // OFF is always permitted, including while locked.
   // ===================================================
-  if (String(topic) == motor1Topic) {
+  if (incomingTopic == motor1Topic) {
     if (command == "ON") {
+      if (!securityIsValid()) {
+        digitalWrite(PUMP1_RELAY, RELAY_OFF);
+        sprayServo1.write(0);
+        Serial.println("Pump 1 BLOCKED: unlock keypad first");
+        return;
+      }
       digitalWrite(PUMP1_RELAY, RELAY_ON);
       sprayServo1.write(180);
-      Serial.println("Water Pump 1 -> ON; Servo 1 -> 180 degrees");
+      Serial.println("Pump 1 (GPIO32) -> ON");
     } else if (command == "OFF") {
       digitalWrite(PUMP1_RELAY, RELAY_OFF);
       sprayServo1.write(0);
-      Serial.println("Water Pump 1 -> OFF; Servo 1 -> 0 degrees");
+      Serial.println("Pump 1 (GPIO32) -> OFF");
     } else {
       Serial.println("Unknown Pump 1 command; state unchanged");
     }
   }
-  else if (String(topic) == motor2Topic) {
+  else if (incomingTopic == motor2Topic) {
     if (command == "ON") {
+      if (!securityIsValid()) {
+        digitalWrite(PUMP2_RELAY, RELAY_OFF);
+        sprayServo2.write(0);
+        Serial.println("Pump 2 BLOCKED: unlock keypad first");
+        return;
+      }
       digitalWrite(PUMP2_RELAY, RELAY_ON);
       sprayServo2.write(180);
-      Serial.println("Water Pump 2 -> ON; Servo 2 -> 180 degrees");
+      Serial.println("Pump 2 (GPIO33) -> ON");
     } else if (command == "OFF") {
       digitalWrite(PUMP2_RELAY, RELAY_OFF);
       sprayServo2.write(0);
-      Serial.println("Water Pump 2 -> OFF; Servo 2 -> 0 degrees");
+      Serial.println("Pump 2 (GPIO33) -> OFF");
     } else {
       Serial.println("Unknown Pump 2 command; state unchanged");
     }
@@ -524,6 +655,15 @@ void setup() {
 
   delay(2000);
 
+  // UART2 security link: RX=GPIO25, TX=GPIO17.
+  // ESP32 GPIO25 receives the Uno's level-shifted TX signal.
+  SecuritySerial.begin(9600, SERIAL_8N1, 25, 17);
+  robotAuthorized = false;
+  securityMessageSeen = false;
+  securityArmed = false;
+  lastSecurityMessage = 0;
+  Serial.println("Security link initialized. ROBOT STARTS LOCKED.");
+
   Serial.println();
 
   Serial.println();
@@ -571,7 +711,7 @@ void setup() {
   sprayServo1.write(0);
   sprayServo2.write(0);
 
-  motorStop();
+  forceAllActuatorsOff();
 
   Serial.println("Motor pins initialized.");
 
@@ -677,7 +817,7 @@ void loop() {
 
     Serial.println("WiFi disconnected!");
 
-    motorStop();
+    forceAllActuatorsOff();
 
     connectWiFi();
 
@@ -693,7 +833,7 @@ void loop() {
 
     Serial.println("MQTT disconnected!");
 
-    motorStop();
+    forceAllActuatorsOff();
 
     connectMQTT();
 
@@ -701,8 +841,13 @@ void loop() {
 
   // ===================================================
 
-  // PROCESS MQTT
+  // KEYPAD SECURITY LINK
+  // ===================================================
 
+  processSecuritySerial();
+  securityIsValid();
+
+  // PROCESS MQTT
   // ===================================================
 
   mqttClient.loop();
