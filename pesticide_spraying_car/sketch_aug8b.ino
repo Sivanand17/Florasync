@@ -1,0 +1,916 @@
+#include <WiFi.h>
+
+#include <WiFiClientSecure.h>
+
+#include <PubSubClient.h>
+#include <ESP32Servo.h>
+#include <string.h>
+
+unsigned long lastHeartbeat = 0;
+
+// =====================================================
+
+// WIFI
+
+// =====================================================
+
+const char* ssid = "FTTH-29";
+
+const char* wifiPassword = "jr290129";
+
+// =====================================================
+
+// HIVEMQ CLOUD
+
+// =====================================================
+
+const char* mqttServer =
+
+  "aa595fb1583d4754a76c3f3ff4fbb9e3.s1.eu.hivemq.cloud";
+
+const int mqttPort = 8883;
+
+const char* mqttUsername = "florasync";
+
+const char* mqttPassword = "florasync@123";
+
+// =====================================================
+
+// MQTT TOPIC
+
+// =====================================================
+
+const char* movementTopic = "agribot/movement";
+const char* motor1Topic = "agribot/motor1";
+const char* motor2Topic = "agribot/motor2";
+
+// =====================================================
+
+// MOTOR PINS
+
+// =====================================================
+
+#define LA 26
+
+#define LB 27
+
+#define RA 14
+
+#define RB 12
+
+// WATER PUMP RELAY PINS
+#define PUMP1_RELAY 32
+#define PUMP2_RELAY 33
+
+// Relay logic adjusted to match the observed hardware behavior:
+// ON energizes the relay; OFF de-energizes it.
+#define RELAY_ON HIGH
+#define RELAY_OFF LOW
+
+// Servo signal pins
+#define SERVO1_PIN 18
+#define SERVO2_PIN 19
+
+Servo sprayServo1;
+Servo sprayServo2;
+
+// =====================================================
+// KEYPAD SECURITY LINK (Arduino Uno <-> ESP32 UART2)
+// Uno D11 TX -> ESP32 GPIO25 RX through a voltage divider
+// Uno D10 RX <- ESP32 GPIO17 TX directly
+// Uno GND and ESP32 GND must be connected together.
+// =====================================================
+HardwareSerial SecuritySerial(2);
+
+bool robotAuthorized = false;       // Always locked at boot
+bool securityMessageSeen = false;
+bool securityArmed = false;         // Must see AUTH:L before accepting AUTH:U
+unsigned long lastSecurityMessage = 0;
+const unsigned long SECURITY_TIMEOUT_MS = 2500;
+
+char securityLine[24];
+byte securityLineLength = 0;
+
+// Print only authentication state changes; repeated UART heartbeat
+// messages remain silent so the Serial Monitor stays clean.
+char lastPrintedAuthState[7] = "";
+
+void printAuthStateIfChanged(const char* state) {
+  if (strcmp(lastPrintedAuthState, state) != 0) {
+    Serial.println(state);
+    strncpy(lastPrintedAuthState, state, sizeof(lastPrintedAuthState) - 1);
+    lastPrintedAuthState[sizeof(lastPrintedAuthState) - 1] = '\0';
+  }
+}
+
+// =====================================================
+
+// MQTT
+
+// =====================================================
+
+WiFiClientSecure espClient;
+
+PubSubClient mqttClient(espClient);
+
+// =====================================================
+
+// SAFETY TIMEOUT
+
+// =====================================================
+
+// If communication stops, automatically stop the motors.
+
+unsigned long lastMovementCommand = 0;
+
+const unsigned long MOTOR_TIMEOUT = 1500;
+
+// =====================================================
+
+// MOTOR STOP
+
+// =====================================================
+
+void motorStop() {
+
+  digitalWrite(LA, LOW);
+
+  digitalWrite(LB, LOW);
+
+  digitalWrite(RA, LOW);
+
+  digitalWrite(RB, LOW);
+
+}
+
+// Turn OFF every actuator controlled by this sketch.
+void forceAllActuatorsOff() {
+  motorStop();
+  digitalWrite(PUMP1_RELAY, RELAY_OFF);
+  digitalWrite(PUMP2_RELAY, RELAY_OFF);
+  sprayServo1.write(0);
+  sprayServo2.write(0);
+}
+
+// Only a fresh AUTH:U message from the Uno authorizes operation.
+bool securityIsValid() {
+  if (robotAuthorized &&
+      (millis() - lastSecurityMessage > SECURITY_TIMEOUT_MS)) {
+    robotAuthorized = false;
+    // Keep the link armed after a temporary timeout. A fresh AUTH:U heartbeat
+    // can restore authorization; a real lock still sends AUTH:L and disarms.
+    securityMessageSeen = false;
+    forceAllActuatorsOff();
+    printAuthStateIfChanged("AUTH:L");
+  }
+
+  return robotAuthorized && securityMessageSeen &&
+         (millis() - lastSecurityMessage <= SECURITY_TIMEOUT_MS);
+}
+
+// Non-blocking parser for the Uno's AUTH:U / AUTH:L status messages.
+void processSecuritySerial() {
+  while (SecuritySerial.available() > 0) {
+    char ch = (char)SecuritySerial.read();
+    if (ch == '\r') continue;
+
+    if (ch == '\n') {
+      securityLine[securityLineLength] = '\0';
+      securityLineLength = 0;
+
+      if (strcmp(securityLine, "AUTH:U") == 0) {
+        lastSecurityMessage = millis();
+        securityMessageSeen = true;
+
+        // After ESP32 boot or a link timeout, require the Uno to report
+        // LOCKED first. This prevents a stale unlocked state restoring access.
+        if (securityArmed && !robotAuthorized) {
+          robotAuthorized = true;
+          printAuthStateIfChanged("AUTH:U");
+          // Unlocking never starts movement automatically.
+          motorStop();
+        }
+      } else if (strcmp(securityLine, "AUTH:L") == 0) {
+        lastSecurityMessage = millis();
+        securityMessageSeen = true;
+        securityArmed = true;
+
+        robotAuthorized = false;
+        forceAllActuatorsOff();
+        printAuthStateIfChanged("AUTH:L");
+      }
+      continue;
+    }
+
+    if (securityLineLength < sizeof(securityLine) - 1) {
+      securityLine[securityLineLength++] = ch;
+    } else {
+      // Discard malformed/overlong lines.
+      securityLineLength = 0;
+    }
+  }
+}
+
+// =====================================================
+
+// FORWARD
+
+// =====================================================
+
+void forward() {
+
+  digitalWrite(LA, HIGH);
+
+  digitalWrite(LB, LOW);
+
+  digitalWrite(RA, LOW);
+
+  digitalWrite(RB, HIGH);
+
+}
+
+// =====================================================
+
+// BACKWARD
+
+// =====================================================
+
+void backward() {
+
+  digitalWrite(LA, LOW);
+
+  digitalWrite(LB, HIGH);
+
+  digitalWrite(RA, HIGH);
+
+  digitalWrite(RB, LOW);
+
+}
+
+// =====================================================
+
+// LEFT
+
+// =====================================================
+
+void left() {
+
+  // Left side STOP
+
+  digitalWrite(LA, LOW);
+
+  digitalWrite(LB, LOW);
+
+  // Right side FORWARD
+
+  digitalWrite(RA, LOW);
+
+  digitalWrite(RB, HIGH);
+
+}
+
+// =====================================================
+
+// RIGHT
+
+// =====================================================
+
+void right() {
+
+  // Left side FORWARD
+
+  digitalWrite(LA, HIGH);
+
+  digitalWrite(LB, LOW);
+
+  // Right side STOP
+
+  digitalWrite(RA, LOW);
+
+  digitalWrite(RB, LOW);
+
+}
+
+// =====================================================
+
+// MQTT CALLBACK
+
+// =====================================================
+
+void mqttCallback(
+
+  char* topic,
+
+  byte* payload,
+
+  unsigned int length
+
+) {
+
+  String command = "";
+
+  // Convert MQTT payload to String
+
+  for (unsigned int i = 0; i < length; i++) {
+
+    command += (char)payload[i];
+
+  }
+
+  // Remove accidental spaces/newlines from dashboard MQTT payloads.
+  command.trim();
+
+  Serial.println();
+
+  Serial.println("================================");
+
+  Serial.println("MQTT MESSAGE RECEIVED");
+
+  Serial.println("================================");
+
+  Serial.print("Topic: ");
+
+  Serial.println(topic);
+
+  Serial.print("Command: [");
+
+  Serial.print(command);
+
+  Serial.println("]");
+
+  // SECURITY GATE:
+  // STOP and pump OFF are always permitted. All other actuator commands
+  // require a fresh AUTH:U message from the keypad controller.
+  String incomingTopic = String(topic);
+  bool isMovementTopic = (incomingTopic == movementTopic);
+  bool isPumpTopic = (incomingTopic == motor1Topic || incomingTopic == motor2Topic);
+  bool isStopCommand = (isMovementTopic && command == "STOP");
+  bool isPumpOffCommand = (isPumpTopic && command == "OFF");
+
+  if (!isStopCommand && !isPumpOffCommand && !securityIsValid()) {
+    Serial.println("BLOCKED: Robot is LOCKED or security link is stale.");
+    forceAllActuatorsOff();
+    return;
+  }
+
+  // ===================================================
+  // WATER PUMP CONTROL (dashboard topics: ON/OFF)
+  // ===================================================
+  if (String(topic) == motor1Topic) {
+    if (command == "ON") {
+      digitalWrite(PUMP1_RELAY, RELAY_ON);
+      sprayServo1.write(180);
+      Serial.println("Water Pump 1 -> ON; Servo 1 -> 180 degrees");
+    } else if (command == "OFF") {
+      digitalWrite(PUMP1_RELAY, RELAY_OFF);
+      sprayServo1.write(0);
+      Serial.println("Water Pump 1 -> OFF; Servo 1 -> 0 degrees");
+    } else {
+      Serial.println("Unknown Pump 1 command; state unchanged");
+    }
+  }
+  else if (String(topic) == motor2Topic) {
+    if (command == "ON") {
+      digitalWrite(PUMP2_RELAY, RELAY_ON);
+      sprayServo2.write(180);
+      Serial.println("Water Pump 2 -> ON; Servo 2 -> 180 degrees");
+    } else if (command == "OFF") {
+      digitalWrite(PUMP2_RELAY, RELAY_OFF);
+      sprayServo2.write(0);
+      Serial.println("Water Pump 2 -> OFF; Servo 2 -> 0 degrees");
+    } else {
+      Serial.println("Unknown Pump 2 command; state unchanged");
+    }
+  }
+  // ===================================================
+  // WHEEL MOTOR MOVEMENT
+  // ===================================================
+  else if (String(topic) == movementTopic && command == "FORWARD") {
+
+    forward();
+
+    lastMovementCommand = millis();
+
+    Serial.println("Motor -> FORWARD");
+
+  }
+
+  // ===================================================
+
+  // BACKWARD
+
+  // ===================================================
+
+  else if (String(topic) == movementTopic && command == "BACKWARD") {
+
+    backward();
+
+    lastMovementCommand = millis();
+
+    Serial.println("Motor -> BACKWARD");
+
+  }
+
+  // ===================================================
+
+  // LEFT
+
+  // ===================================================
+
+  else if (String(topic) == movementTopic && command == "LEFT") {
+
+    left();
+
+    lastMovementCommand = millis();
+
+    Serial.println("Motor -> LEFT");
+
+  }
+
+  // ===================================================
+
+  // RIGHT
+
+  // ===================================================
+
+  else if (String(topic) == movementTopic && command == "RIGHT") {
+
+    right();
+
+    lastMovementCommand = millis();
+
+    Serial.println("Motor -> RIGHT");
+
+  }
+
+  // ===================================================
+
+  // STOP
+
+  // ===================================================
+
+  else if (String(topic) == movementTopic && command == "STOP") {
+
+    motorStop();
+
+    lastMovementCommand = millis();
+
+    Serial.println("Motor -> STOP");
+
+  }
+
+  // ===================================================
+
+  // UNKNOWN
+
+  // ===================================================
+
+  else if (String(topic) == movementTopic) {
+
+    Serial.println("Unknown movement command!");
+
+    motorStop();
+
+  }
+
+}
+
+// =====================================================
+
+// CONNECT TO WIFI
+
+// =====================================================
+
+void connectWiFi() {
+
+  Serial.println();
+
+  Serial.println("================================");
+
+  Serial.println("CONNECTING TO WIFI");
+
+  Serial.println("================================");
+
+  WiFi.mode(WIFI_STA);
+
+  WiFi.begin(
+
+    ssid,
+
+    wifiPassword
+
+  );
+
+  while (WiFi.status() != WL_CONNECTED) {
+
+    delay(500);
+
+    Serial.print(".");
+
+  }
+
+  Serial.println();
+
+  Serial.println("WIFI CONNECTED!");
+
+  Serial.print("ESP32 IP: ");
+
+  Serial.println(WiFi.localIP());
+
+  Serial.print("WiFi Signal: ");
+
+  Serial.print(WiFi.RSSI());
+
+  Serial.println(" dBm");
+
+}
+
+// =====================================================
+
+// CONNECT TO HIVEMQ
+
+// =====================================================
+
+void connectMQTT() {
+
+  while (!mqttClient.connected()) {
+
+    Serial.println();
+
+    Serial.println("================================");
+
+    Serial.println("CONNECTING TO HIVEMQ");
+
+    Serial.println("================================");
+
+    String clientID =
+
+      "AgriBot-ESP32-" +
+
+      String((uint32_t)ESP.getEfuseMac(), HEX);
+
+    Serial.print("Client ID: ");
+
+    Serial.println(clientID);
+
+    Serial.print("Connecting... ");
+
+    if (
+
+      mqttClient.connect(
+
+        clientID.c_str(),
+
+        mqttUsername,
+
+        mqttPassword
+
+      )
+
+    ) {
+
+      Serial.println("CONNECTED!");
+
+      // Subscribe to movement topic
+
+      bool subscribed = mqttClient.subscribe(
+
+        movementTopic,
+
+        1
+
+      );
+
+      if (subscribed) {
+
+        Serial.println("MQTT SUBSCRIBE SUCCESS!");
+
+        Serial.print("Topic: ");
+
+        Serial.println(movementTopic);
+
+      } else {
+
+        Serial.println("MQTT SUBSCRIBE FAILED!");
+
+      }
+
+      bool pump1Subscribed = mqttClient.subscribe(motor1Topic, 1);
+      bool pump2Subscribed = mqttClient.subscribe(motor2Topic, 1);
+      Serial.println(pump1Subscribed ? "Pump 1 topic subscribed" : "Pump 1 topic subscribe FAILED");
+      Serial.println(pump2Subscribed ? "Pump 2 topic subscribed" : "Pump 2 topic subscribe FAILED");
+
+      // Always start stopped
+
+      motorStop();
+
+      lastMovementCommand = millis();
+
+    }
+
+    else {
+
+      Serial.println("FAILED!");
+
+      Serial.print("MQTT State: ");
+
+      Serial.println(mqttClient.state());
+
+      Serial.println("Retrying in 2 seconds...");
+
+      motorStop();
+
+      delay(2000);
+
+    }
+
+  }
+
+}
+
+// =====================================================
+
+// SETUP
+
+// =====================================================
+
+void setup() {
+
+  Serial.begin(115200);
+
+  delay(2000);
+
+  // UART2 security link: RX=GPIO25, TX=GPIO17.
+  // ESP32 GPIO25 receives the Uno's level-shifted TX signal.
+  SecuritySerial.begin(9600, SERIAL_8N1, 25, 17);
+  robotAuthorized = false;
+  securityMessageSeen = false;
+  securityArmed = false;
+  lastSecurityMessage = 0;
+  Serial.println("Security link initialized. ROBOT STARTS LOCKED.");
+
+  Serial.println();
+
+  Serial.println();
+
+  Serial.println("################################");
+
+  Serial.println("#                              #");
+
+  Serial.println("#       AGRIBOT ESP32          #");
+
+  Serial.println("#       MOTOR CONTROLLER       #");
+
+  Serial.println("#                              #");
+
+  Serial.println("################################");
+
+  // ===================================================
+
+  // MOTOR PINS
+
+  // ===================================================
+
+  Serial.println();
+
+  Serial.println("Initializing motor pins...");
+
+  pinMode(LA, OUTPUT);
+
+  pinMode(LB, OUTPUT);
+
+  pinMode(RA, OUTPUT);
+
+  pinMode(RB, OUTPUT);
+
+  pinMode(PUMP1_RELAY, OUTPUT);
+  pinMode(PUMP2_RELAY, OUTPUT);
+  digitalWrite(PUMP1_RELAY, RELAY_OFF);
+  digitalWrite(PUMP2_RELAY, RELAY_OFF);
+
+  // Initialize both spray-head servos at their resting position.
+  sprayServo1.setPeriodHertz(50);
+  sprayServo2.setPeriodHertz(50);
+  sprayServo1.attach(SERVO1_PIN, 500, 2400);
+  sprayServo2.attach(SERVO2_PIN, 500, 2400);
+  sprayServo1.write(0);
+  sprayServo2.write(0);
+
+  forceAllActuatorsOff();
+
+  Serial.println("Motor pins initialized.");
+
+  Serial.println("Motors stopped.");
+
+  // ===================================================
+
+  // WIFI
+
+  // ===================================================
+
+  connectWiFi();
+
+  // ===================================================
+
+  // TLS
+
+  // ===================================================
+
+  Serial.println();
+
+  Serial.println("Configuring TLS...");
+
+  // Temporary testing configuration.
+
+  // We can add certificate validation later.
+
+  espClient.setInsecure();
+
+  Serial.println("TLS configured.");
+
+  // ===================================================
+
+  // MQTT
+
+  // ===================================================
+
+  mqttClient.setServer(
+
+    mqttServer,
+
+    mqttPort
+
+  );
+
+  mqttClient.setCallback(
+
+    mqttCallback
+
+  );
+
+  // MQTT connection settings
+
+  mqttClient.setKeepAlive(30);
+
+  mqttClient.setSocketTimeout(10);
+
+  mqttClient.setBufferSize(512);
+
+  // ===================================================
+
+  // CONNECT
+
+  // ===================================================
+
+  connectMQTT();
+
+  // ===================================================
+
+  // READY
+
+  // ===================================================
+
+  Serial.println();
+
+  Serial.println("################################");
+
+  Serial.println("#                              #");
+
+  Serial.println("#         AGRIBOT READY        #");
+
+  Serial.println("#                              #");
+
+  Serial.println("################################");
+
+}
+
+// =====================================================
+
+// LOOP
+
+// =====================================================
+
+void loop() {
+
+  // ===================================================
+
+  // WIFI CHECK
+
+  // ===================================================
+
+  if (WiFi.status() != WL_CONNECTED) {
+
+    Serial.println("WiFi disconnected!");
+
+    forceAllActuatorsOff();
+
+    connectWiFi();
+
+  }
+
+  // ===================================================
+
+  // MQTT CHECK
+
+  // ===================================================
+
+  if (!mqttClient.connected()) {
+
+    Serial.println("MQTT disconnected!");
+
+    forceAllActuatorsOff();
+
+    connectMQTT();
+
+  }
+
+  // ===================================================
+
+  // KEYPAD SECURITY LINK
+  // ===================================================
+
+  processSecuritySerial();
+  securityIsValid();
+
+  // PROCESS MQTT
+  // ===================================================
+
+  mqttClient.loop();
+
+  // ===================================================
+
+  // MOTOR SAFETY
+
+  // ===================================================
+
+  if (
+
+    millis() - lastMovementCommand >
+
+    MOTOR_TIMEOUT
+
+  ) {
+
+    motorStop();
+
+  }
+
+  // ===================================================
+
+  // ROBOT HEARTBEAT
+
+  // ===================================================
+
+  if (
+
+    millis() - lastHeartbeat >= 2000
+
+  ) {
+
+    lastHeartbeat = millis();
+
+    if (mqttClient.connected()) {
+
+      bool success = mqttClient.publish(
+
+        "agribot/status/online",
+
+        "ONLINE",
+
+        false
+
+      );
+
+      if (success) {
+
+        Serial.println(
+
+          "💚 HEARTBEAT SENT: ONLINE"
+
+        );
+
+      } else {
+
+        Serial.println(
+
+          "❌ HEARTBEAT FAILED"
+
+        );
+
+      }
+
+    } else {
+
+      Serial.println(
+
+        "❌ Cannot send heartbeat - MQTT disconnected"
+
+      );
+
+    }
+
+  }
+
+  delay(5);
+
+}
