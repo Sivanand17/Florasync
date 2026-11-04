@@ -372,4 +372,6 @@ The second ESP32 receiver has not yet been connected to the AgriBot hardware. Th
 ![NRF24L01 ESP32 Hardware Testing](images/nrf3.jpeg)
 
 
+
+**Total time spent:** 5 hours
 ---
