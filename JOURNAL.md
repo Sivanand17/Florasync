@@ -387,7 +387,7 @@ With the completion of the outer covering, FloraSync now has a dedicated physica
 ![FloraSync Completed Outer Enclosure - Top View](images/outercovering3.jpeg)
 
 
-**Total time spent:** [Add your working hours]
+**Total time spent:** 7 hours
 
 ---
 # November 4: Completed ESP32 and NRF24L01+PA+LNA Initial Integration and Hardware Testing
