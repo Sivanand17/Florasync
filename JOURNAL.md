@@ -373,5 +373,5 @@ The second ESP32 receiver has not yet been connected to the AgriBot hardware. Th
 
 
 
-**Total time spent:** 5 hours
+**Total time spent:** 5 hours and 30 minutes
 ---
