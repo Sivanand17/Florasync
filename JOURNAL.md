@@ -289,8 +289,87 @@ With these improvements, the AgriBot movement controls, aquarium pump relay outp
 
 **Total time spent:** 10 hours
 
----
 
 ![AgriBot Motor Testing](images/lockingsystem1.jpeg)
 
 ![Aquarium Pump Relay Integration](images/lockingsystem2.jpeg)
+
+---
+# November 4: Completed ESP32 and NRF24L01+PA+LNA Initial Integration and Hardware Testing
+
+The development of the AgriBot wireless joystick control system was initiated to establish a dedicated wireless communication system using ESP32 and NRF24L01+PA+LNA modules. The main objective is to replace the previous MQTT-based movement control approach with a direct wireless joystick controller, providing more responsive and independent control over the AgriBot movement and spraying mechanisms.
+
+The proposed system consists of two ESP32 boards communicating through NRF24L01 wireless transceiver modules. The first ESP32 acts as the transmitter in the handheld controller, while the second ESP32 will act as the receiver installed on AgriBot.
+
+The handheld controller is planned to include two joysticks and multiple physical buttons. The first joystick will be dedicated to robot movement, providing forward, reverse, left, and right controls. The second joystick will control the spraying mechanism, allowing adjustment of the spraying height and nozzle direction.
+
+During the initial hardware integration, the NRF24L01+PA+LNA module was connected to the ESP32 30-pin DevKit. The SPI communication pins were configured along with the CE and CSN control pins. Since GPIO 16 and GPIO 17 were unavailable on the selected ESP32 board, alternative GPIO pins were assigned for the NRF24L01 connections.
+
+The RF24 library by TMRh20 was installed in the Arduino IDE, and an initial hardware detection program was uploaded to the ESP32. The Serial Monitor successfully displayed the message `NRF24 DETECTED!`, confirming that the ESP32 could communicate with the NRF24L01 module through the SPI interface.
+
+The module configuration was also successfully read through the Serial Monitor, displaying a data rate of 250 KBPS, 16-bit CRC, and PA_LOW transmission power configuration. This confirmed that the initial hardware connections and SPI communication were functioning correctly.
+
+An initial power test was also performed by powering the NRF24L01 module through the ESP32's 3.3V output. The module was successfully detected during this test. However, further stability and wireless transmission testing are still required before finalizing the power arrangement for the PA+LNA modules.
+
+The second ESP32 receiver has not yet been connected to the AgriBot hardware. The next stage will involve connecting the second NRF24L01 module, establishing wireless communication between both ESP32 boards, and testing reliable data transmission before integrating the motor driver, servos, and fertilizer pump controls.
+
+## Planned Joystick and Button Control Architecture
+
+**Joystick 1 – Movement Control:**
+
+- Forward and reverse movement.
+- Left and right steering.
+- Dedicated movement enable control.
+
+**Joystick 2 – Spraying System Control:**
+
+- Raising and lowering the spraying mechanism.
+- Adjusting the spray nozzle direction.
+- Dedicated spraying pump control.
+
+**Additional Physical Buttons:**
+
+- Fertilizer pump ON/OFF control.
+- Camera control.
+- Headlight control.
+- Warning buzzer control.
+- Emergency stop.
+
+## Challenges and Difficulties Faced
+
+- Selecting suitable GPIO pins for the NRF24L01 module on the 30-pin ESP32 DevKit.
+- Establishing the correct SPI communication connections between the ESP32 and NRF24L01.
+- Configuring the RF24 library and verifying successful hardware detection.
+- Understanding the power requirements of the NRF24L01+PA+LNA module.
+- Planning the transmitter and receiver architecture for independent joystick-based movement and spraying control.
+- Ensuring reliable wireless communication before integrating the existing AgriBot hardware.
+
+## Final Status
+
+**ESP32 Transmitter Integration:** Successfully connected and tested.
+
+**NRF24L01 Hardware Detection:** Successfully completed.
+
+**SPI Communication:** Successfully established.
+
+**RF24 Library Configuration:** Completed.
+
+**NRF24L01 Power Testing:** Initial detection through ESP32 3.3V output successful; further stability testing pending.
+
+**Second ESP32 Receiver:** Not yet connected.
+
+**Wireless Communication:** Pending transmitter-to-receiver testing.
+
+**Joystick Control System:** Architecture planned; implementation pending.
+
+**AgriBot Hardware Integration:** Pending wireless communication testing.
+
+**Next Development Stage:** Connect the second ESP32 and NRF24L01 module, establish wireless communication, and begin implementing the dual-joystick control system.
+
+
+![NRF24L01 ESP32 Hardware Testing](images/nrf1.jpeg)
+![NRF24L01 ESP32 Hardware Testing](images/nrf2.jpeg)
+![NRF24L01 ESP32 Hardware Testing](images/nrf3.jpeg)
+
+
+---
